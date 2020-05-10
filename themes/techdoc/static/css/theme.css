@@ -20,6 +20,7 @@ html {
  */
 body {
   margin: 0;
+  font-family: STHeiti, "Microsoft YaHei", SimSun;
 }
 
 /**
@@ -60,7 +61,8 @@ hr {
  */
 pre {
   /* stylelint-disable */
-  font-family: monospace, monospace;
+  /* font-family: monospace, monospace; */
+  font-family: STHeiti, "Microsoft YaHei", SimSun;
   /* 1 */
   /* stylelint-enable */
   font-size: 1em;
@@ -108,10 +110,11 @@ code,
 kbd,
 samp {
   /* stylelint-disable */
-  font-family: monospace, monospace;
+  /* font-family: monospace, monospace; */
+  font-family: STHeiti, "Microsoft YaHei", SimSun;
   /* 1 */
   /* stylelint-enable */
-  font-size: 1em;
+  font-size: 0.9em;
   /* 2 */
 }
 
@@ -162,7 +165,8 @@ input,
 optgroup,
 select,
 textarea {
-  font-family: inherit;
+  /* font-family: inherit; */
+  font-family: STHeiti, "Microsoft YaHei", SimSun;
   /* 1 */
   font-size: 100%;
   /* 1 */
@@ -434,7 +438,7 @@ fieldset {
   font-size: 100%;
   line-height: 2;
   color: #000;
-  font-family: var(--custom-font-family-base, -apple-system, BlinkMacSystemFont, "游ゴシック体", YuGothic, "メイリオ", Meiryo, "Helvetica Neue", HelveticaNeue, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji");
+  font-family: var(--custom-font-family-base, -apple-system, STHeiti, "Microsoft YaHei", SimSun);
   -webkit-font-feature-settings: 'pwid';
           font-feature-settings: 'pwid';
 }
@@ -450,7 +454,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--custom-font-family-headings, -apple-system, BlinkMacSystemFont, "游ゴシック体", YuGothic, "メイリオ", Meiryo, "Helvetica Neue", HelveticaNeue, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji");
+  font-family: STHeiti, "Microsoft YaHei", SimSun;
   font-weight: bold;
   line-height: 2;
 }
