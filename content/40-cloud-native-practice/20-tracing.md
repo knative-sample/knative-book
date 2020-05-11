@@ -23,13 +23,13 @@ description: ""
 ## 调用链追踪 
 1. 选择命名空间设置如下标签启用 Sidecar 自动注入：istio-injection=enabled。通过这种方式就注入了 Istio 的 envoy 代理（proxy）容器， Istio 的 envoy 代理拦截流量后会主动上报 trace 系统。以设置 default 命名空间为例：
 
-```
+```bash
 kubectl label namespace default istio-injection=enabled
 ```
 2. 部署 Knative Service 服务。参考 Serving Hello World 章节
 3. 访问 Hello World 示例服务。
 
-```
+```bash
 $ curl -H "Host: helloworld-go.default.example.com" http://112.124.XX.XX
 Hello Go Sample v1!
 ```

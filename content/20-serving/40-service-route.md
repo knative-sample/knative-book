@@ -11,7 +11,7 @@ Knative 默认会为每一个 Service 生成一个域名，并且 Istio Gateway 
 
 ## Knative Serving 的默认域名 example.com 
 首先需要部署一个 Knative Service。如果你已经有了一个 Knative 集群，那么直接把下面的内容保存到 login-service.yaml 文件中。然后执行一下 `kubectl apply -f  login-service.yaml  `  即可把 login-service 服务部署到 default namespace 中。
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -32,7 +32,7 @@ spec:
 ```
 
 现在我们来看一下 Knative Service 自动生成的域名配置:
-```
+```bash
 └─# kubectl -n default get ksvc
 NAME    URL                                   LATESTCREATED   LATESTREADY   READY   REASON
 login-service   http://login-service.default.example.com   login-service-wsnvc     login-service-wsnvc   True
@@ -40,12 +40,12 @@ login-service   http://login-service.default.example.com   login-service-wsnvc  
 
 现在使用 curl 指定 Host 就能访问服务了。
 - 首先获取到 Istio Gateway IP 
-```
+```bash
 └─# kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"
 47.95.191.136
 ```
 - 访问 login-service 服务
-```
+```bash
 └─# curl -H "Host: login-service.default.example.com" http://47.95.191.136/
 Hello Login Service
 ```
@@ -57,7 +57,7 @@ Hello Login Service
 
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1573010931575-073b2eef-199d-4e71-8b40-a89f2334652e.png) 
 再来看一下 Knative Service 的域名, 如下所示已经生效了。
-```
+```bash
 └─# kubectl -n default get ksvc
 NAME    URL                                              LATESTCREATED   LATESTREADY   READY   REASON
 login-service   http://login-service.default.knative.kuberun.com   login-service-wsnvc     login-service-wsnvc   True

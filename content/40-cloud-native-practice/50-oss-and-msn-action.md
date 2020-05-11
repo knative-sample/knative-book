@@ -48,7 +48,7 @@ description: ""
 ```
 设置 `mnsoss-secret.yaml` 内容。则需要设置 `mns` 如下：
 
-```
+```yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -59,12 +59,12 @@ data:
 ```
 执行命令使其生效：
 
-```
+```bash
 kubectl apply -f mnsoss-secret.yaml
 ```
 ### 创建 Service Account及角色绑定
 设置 `mnsoss-sa.yaml` 内容。
-```
+```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -86,13 +86,13 @@ metadata:
 ```
 执行命令使其生效：
 
-```
+```bash
 kubectl apply -f mnsoss-sa.yaml
 ```
 
 ### 设置istio egress（若当前命名空间下启用了istio注入）
 
-```
+```yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
@@ -109,13 +109,13 @@ spec:
 
 ### 创建 Broker
 
-```
+```bash
 kubectl label namespace default knative-eventing-injection=enabled
 ```
 ### 创建 MnsOss 事件源
 为了接收 MnsOss 产生的事件， 需要创建 MnsOssSource 用于接收事件。mnsoss-source.yaml如下：
 
-```
+```yaml
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: MnsOssSource
 metadata:
@@ -137,19 +137,19 @@ spec:
 ```
 参数说明：
 
-```
+```yaml
 topic：表示 MNS 主题名称
 ```
 
 执行 kubectl 命令：
 
-```
+```bash
 kubectl  apply -f mnsoss-source.yaml
 ```
 ### 创建 Knative Service
 为了验证 `MnsOssSource` 是否可以正常工作，可以这里使用人脸识别的的 Knative Service 示例。service.yaml如下：
 
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -173,7 +173,7 @@ spec:
 ```
 env参数说明：
 
-```
+```yaml
 UPLOAD_OSS_PATH：表示目标图片的存放位置
 ACCESSKEY_ID：用户ak信息
 ACCESSKEY_SECRET：用户sk信息
@@ -181,12 +181,12 @@ ACCESSKEY_SECRET：用户sk信息
 
 执行以下命令创建 Service。
 
-```
+```bash
 kubectl apply -f service.yaml
 ```
 ### 创建 Trigger
 创建 Trigger， 订阅事件信息。trigger.yaml如下：
-```
+```yaml
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:
@@ -201,7 +201,7 @@ spec:
 ```
 执行 kubectl 命令：
 
-```
+```bash
 kubectl apply -f trigger.yaml
 ```
 

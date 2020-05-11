@@ -38,12 +38,12 @@ Autoscaler 计算 60 秒窗口内的平均并发数，系统需要 1 分钟稳�
 ```
 ## 配置 KPA
 通过上面的介绍，我们对 Knative Pod Autoscaler 工作机制有了初步的了解，那么接下来介绍如何配置 KPA。在 Knative中配置 KPA 信息，需要修改 k8s 中的 ConfigMap：config-autoscaler，该 ConfigMap 在 knative-serving 命名空间下。查看 config-autoscaler 使用如下命令：
-```
+```bash
 kubectl -n knative-serving get cm config-autoscaler
 ```
 默认的 ConfigMap 如下：
 
-```
+```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -80,19 +80,19 @@ data:
 #### scale-to-zero-grace-period
 scale-to-zero-grace-period 表示在缩为0之前，inactive revison 保留的运行时间（最小是30s）。
 
-```
+```yaml
 scale-to-zero-grace-period: 30s
 ```
 
 #### stable-window
 当在 stable mode 模式运行中，autoscaler 在稳定窗口期下平均并发数下的操作
 
-```
+```yaml
 stable-window: 60s
 ```
 stable-window 同样可以配置在 Revision 注释中
 
-```
+```yaml
 autoscaling.knative.dev/window: 60s
 ```
 #### enable-scale-to-zero
@@ -105,19 +105,19 @@ Termination period（终止时间）是 POD 在最后一个请求完成后关闭
 target 定义在给定时间（软限制）需要多少并发请求，是 Knative 中 Autoscaler 的推荐配置。
 在 ConfigMap 中默认配置的并发 target 为100
 
-```
-`container-concurrency-target-default: 100`
+```yaml
+container-concurrency-target-default: 100
 ```
 这个值可以通过 Revision 中的`autoscaling.knative.dev/target`注释进行修改：
 
-```
+```yaml
 autoscaling.knative.dev/target: 50
 ```
 #### containerConcurrency
 注意：只有在明确需要限制在给定时间有多少请求到达应用程序时，才应该使用 containerConcurrency (容器并发)。只有当应用程序需要强制的并发约束时，才建议使用 containerConcurrency。
 containerConcurrency 限制在给定时间允许并发请求的数量（硬限制），并在 Revision 模板中配置。
 
-```
+```yaml
 containerConcurrency: 0 | 1 | 2-N
 ```
 - 1: 将确保一次只有一个请求由 Revision 给定的容器实例处理。
@@ -128,7 +128,7 @@ containerConcurrency: 0 | 1 | 2-N
 通过 minScale 和 maxScale 可以配置应用程序提供服务的最小和最大Pod数量。通过这两个参数配置可以控制服务冷启动或者控制计算成本。
 minScale 和 maxScale 可以在 Revision 模板中按照以下方式进行配置：
 
-```
+```yaml
 spec:
   template:
     metadata:
@@ -148,7 +148,7 @@ edit podautoscaler <revision-name>
 ## 下面我们看一下基于 KPA 配置的示例
 Knative 0.10.0 版本部署安装可以参考：[阿里云部署 Knative](https://help.aliyun.com/document_detail/121509.html)
 我们使用官方提供的 autoscale-go 示例来进行演示，示例 service.yaml 如下：
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -167,20 +167,20 @@ spec:
 ```
 获取访问网关：
 
-```
+```bash
 $ kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"
 121.199.194.150
 ```
  Knative 0.10.0 版本中获取域名信息：
 
-```
+```bash
 $ kubectl get route autoscale-go --output jsonpath="{.status.url}"| awk -F/ '{print $3}'
 autoscale-go.default.example.com
 ```
 ### 场景1：并发请求示例
 如上配置，当前最大并发请求数 10。 我们执行 30s 内保持 50 个并发请求，看一下执行情况：
 
-```
+```bash
 hey -z 30s -c 50   -host "autoscale-go.default.example.com"   "http://121.199.194.150?sleep=100&prime=10000&bloat=5"
 ```
 ![autoscale-1.gif](https://intranetproxy.alipay.com/skylark/lark/0/2019/gif/11378/1563868944546-7dcf4c2e-078a-4898-926c-8791246bd9c0.gif) 
@@ -188,7 +188,7 @@ hey -z 30s -c 50   -host "autoscale-go.default.example.com"   "http://121.199.19
 结果正如我们所预期的：扩容出来了 5 个 POD。
 ### 场景2：扩缩容边界示例
 修改一下 servcie.yaml 配置如下：
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -209,7 +209,7 @@ spec:
 ```
 当前最大并发请求数 10，minScale 最小保留实例数为 1，maxScale 最大扩容实例数为 3。
 我们依然执行 30s 内保持 50 个并发请求，看一下执行情况：
-```
+```bash
 hey -z 30s -c 50   -host "autoscale-go.default.example.com"   "http://121.199.194.150?sleep=100&prime=10000&bloat=5"
 ```
 ![autoscale-2.gif](https://intranetproxy.alipay.com/skylark/lark/0/2019/gif/11378/1563869341138-a8fb2614-973a-49c1-ad03-a9013bcd099c.gif) 
@@ -218,7 +218,7 @@ hey -z 30s -c 50   -host "autoscale-go.default.example.com"   "http://121.199.19
 ## 结论
 看了上面的介绍，是不是感觉在 Knative 中配置应用扩缩容是如此简单。其实 Knative 中除了支持 KPA 之外，也支持K8s HPA。你可以通过如下配置基于 CPU 的 Horizontal POD Autoscaler（HPA）：
 通过在修订模板中添加或修改`autoscaling.knative.dev/class`和`autoscaling.knative.dev/metric`值作为注释，可以将Knative 配置为使用基于 CPU 的自动缩放，而不是默认的基于请求的度量。配置如下：
-```
+```yaml
 spec:
   template:
     metadata:

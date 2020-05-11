@@ -12,7 +12,7 @@ Serverless 一个核心思想就是按需分配，那么 Knative 是如何实现
 Knative 官方给出了好几种语言的 [Helloworld 示例](https://github.com/knative/docs/tree/master/docs/serving/samples/hello-world)，这些不同的语言其实只是编译镜像的 Dockerfile 有所不同，做好镜像之后的使用方式没什么差异。本例以 go 的 Hello World 为例进行演示。官方给出的例子都是源码，需要编译长镜像才能使用。为了你验证方便我已经提前编译好了一份镜像  registry.cn-hangzhou.aliyuncs.com/knative-sample/simple-app:07 , 你可以直接使用。
 
 首先编写一个 Knative Service 的 yaml 文件 `helloworld-go.yaml` , 内容如下：
-```
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -38,13 +38,13 @@ spec:
 现在使用 kubectl 命令把 yaml 提交到 Kubernetes 中:
 
 - 部署 helloworld-go
-```
+```bash
 └─# kubectl apply -f helloworld-go.yaml
 service.serving.knative.dev/helloworld-go created
 ```
 
 - 查看 helloworld-go pod
-```
+```bash
 └─# kubectl get pod
 NAME                                                              READY   STATUS      RESTARTS   AGE
 helloworld-go-7n4dm-deployment-65cb6d9bf-9njqx                    2/2     Running     0          8s
@@ -55,21 +55,21 @@ helloworld-go-7n4dm-deployment-65cb6d9bf-9njqx                    2/2     Runnin
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11431/1559533922410-7a51e5be-fd95-4c7c-93b9-888599c01368.png) 
 所以想要访问 Knative 的服务首先要获取 Gateway 的 IP 地址，可以通过如下方式获取 Gateway 的 IP：
 
-```
+```bash
 └─# kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*].ip}"
 39.106.232.122
 ```
 
 前面也介绍了 Gateway 是通过 VirtualService 来进行流量转发的，这就要求访问者要知道目标服务的名字才行(域名)，所以要先获取 helloworld-go 的域名, 注意下面这条命令中的 `${SVC_NAME}` 需要替换成 `helloworld-go` ，这个名字必须要和 Knative Service 的名字一致，因为每一个 Service 都有一个唯一的名字。
 
-```
+```bash
 └─# kubectl get route ${SVC_NAME} --output jsonpath="{.status.domain}"
 helloworld-go.default.knative.kuberun.com
 ```
 
 至此你已经拿到 IP 地址和 Hostname，可以通过 curl 直接发起请求：
 
-```
+```bash
 └─# curl -H "Host: helloworld-go.default.knative.kuberun.com" "http://39.106.232.122"
 Hello World!
 ```
@@ -77,12 +77,12 @@ Hello World!
 ### 缩容到零
 刚刚部署完 Service 的时候 Knative 默认会创建出一个 Pod 提供服务，如果你超过 90 秒没有访问 helloworld-go 这个服务那么这个 Pod 就会自动删除，此时就是缩容到零了。现在看一下 Pod 情况, 你可能会发现没有 Pod
 
-```
+```bash
 └─# kubectl get pod -o wide
 No resources found.
 ```
 
-```
+```bash
 └─# time curl -H "Host: helloworld-go.default.knative.kuberun.com" "http://39.106.232.122"
 Hello World!
 
@@ -91,7 +91,7 @@ user	0m0.007s
 sys	0m0.007s
 ```
 注意结果中，这面这一段：
-```
+```bash
 real	0m2.775s
 user	0m0.007s
 sys	0m0.007s
@@ -99,7 +99,7 @@ sys	0m0.007s
 `real	0m2.775s`  意思意思是 `curl` 请求执行一共消耗了 `2.775s` , 也就是说 Knative 从零到 1 扩容 + 启动容器再到服务响应请求总共消耗了 `2.775s` （我之前的测试导致在 Node  上面缓存了镜像，所以没有拉镜像的时间）。可以看出来这个速度还是很快的。
 
 再看一下 pod 数量， 你会发现此时 Pod 自动扩容出来了。并且 Pod 数量为零时发起的请求并没有拒绝链接。
-```
+```bash
 └─# kubectl get pod
 NAME                                              READY   STATUS    RESTARTS   AGE
 helloworld-go-p9w6c-deployment-5dfdb6bccb-gjfxj   2/2     Running   0          31s
@@ -117,7 +117,7 @@ helloworld-go-p9w6c-deployment-5dfdb6bccb-gjfxj   2/2     Running   0          3
 
 测试结果如下：
 
-```
+```bash
 └─# hey -z 30s -c 50 "http://helloworld-go.default.knative.kuberun.com/" && kubectl get pods
 
 Summary:

@@ -17,7 +17,7 @@ description: ""
 ## 基于阿里云 API 网关发布服务
 ### 绑定 Istio 网关到内网SLB
 创建内网SLB，绑定 Istio 网关应用。可以直接通过下面的 yaml 创建内网 SLB：
-```
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -63,7 +63,7 @@ spec:
 这里我们创建 helloworld 服务，如图所示：
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1567648371907-5018b365-924f-413f-9050-5a282b1226e7.png) 
 验证一下服务是否可以访问：
-```
+```bash
 [root@iZbp1c1wa320d487jdm78aZ ~]# curl -H "Host:helloworld.default.example.com" http://192.168.0.23
 Hello World!
 ```

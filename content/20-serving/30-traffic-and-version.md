@@ -14,7 +14,7 @@ description: "calling built-in Shortcodes into your content files."
 - 代码 
 测试之前我们需要写一段  rest-api 的代码，并且还要能够区分不同的版本。下面我基于官方的[例子](https://github.com/knative/docs/blob/master/docs/serving/samples/rest-api-go/stock.go)进行了修改，为了使用方便去掉了 `github.com/gorilla/mux` 依赖，直接使用 Golang 系统包  `net/http` 替代。这段代码可以通过 RESOURCE 环境变量来区分不同的版本。
 
-```
+```go
 package main
 
 import (
@@ -88,7 +88,7 @@ func StockPrice(w http.ResponseWriter, r *http.Request) {
 你在测试的时候请把 `registry.cn-hangzhou.aliyuncs.com/knative-sample/rest-api-go:v1` 换成你自己的镜像仓库地址。
 编译好镜像以后执行 `docker push registry.cn-hangzhou.aliyuncs.com/knative-sample/rest-api-go:v1` 把镜像推送到镜像仓库。
 
-```
+```dockerfile
 FROM registry.cn-hangzhou.aliyuncs.com/knative-sample/golang:1.12 as builder
 
 WORKDIR /go/src/github.com/knative-sample/rest-api-go
@@ -104,7 +104,7 @@ CMD ["/rest-api-go"]
  - Service 配置
  镜像已经有了，我们开始部署 Knative Service。把下面的内容保存到 revision-v1.yaml 中，然后执行 `kubectl apply -f revision-v1.yaml ` 即可完成 Knative Service 的部署。
  
- ```
+ ```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -132,27 +132,27 @@ spec:
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11431/1563317462047-cfe83f6a-d47b-4a51-9c23-b9edc0d3b0fb.png) 
 
 - Knative Service 
-```
+```bash
 kubectl get ksvc traffic-example --output yaml
 ```
 - Knative Configuration
-```
+```bash
 kubectl get configuration -l \
 "serving.knative.dev/service=traffic-example" --output yaml
 ```
 - Knative Revision
-```
+```bash
 kubectl get revision -l \
 "serving.knative.dev/service=traffic-example" --output yaml
 ```
 - Knative Route
-```
+```bash
 kubectl get route -l \
 "serving.knative.dev/service=traffic-example" --output yaml
 ```
 **访问 rest-api 服务**
 我们部署的 Service 名称是： traffic-example。访问这个 Service 需要获取 Istio Gateway 的 IP，然后使用 traffic-example.default.knative.kuberun.com 这个 Domain 绑定 Host 的方式发起 curl 请求。为了方便测试我写成了一个脚本。创建一个 run-test.sh 文件，把下面这些内容复制到文件内，然后赋予文件可执行权限。执行执行此脚本就能得到测试结果。
-```
+```bash
 #!/bin/bash
 #****************************************************************#
 # Create Date: 2019-11-06 14:38
@@ -167,7 +167,7 @@ curl -H "Host: ${DOMAIN_NAME}" http://${GATEWAY_IP}
 ```
 测试结果：
 从下面的命令输出结果可以看到现在返回的是 v1 的信息，说明请求打到 v1 上面了。
-```
+```bash
 └─# ./run-test.sh
 Welcome to the v1 app!
 ```
@@ -176,7 +176,7 @@ Welcome to the v1 app!
 
 创建 v2 revision `revision-v2.yaml` 文件，内容如下：
 
-```
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -210,7 +210,7 @@ spec:
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11431/1573022880437-a94cea24-eb60-4718-9ab2-139d5d440077.png) 
 执行 `kubectl apply -f revision-v2.yaml` 安装 v2 版本的配置。然后多次执行`for ((i=1; i<=10; i++)); do ./run-test.sh; done`这条命令就能看到现在返回的结果中 v1 和 v2 的比例基本是 8:2  的比例。下面这是我真实测试的结果。
 
-```
+```bash
 └─# for ((i=1; i<=10; i++)); do ./run-test.sh; done
 Welcome to the v1 app!
 Welcome to the v2 app!
@@ -228,7 +228,7 @@ Welcome to the v2 app!
 上面展示的 v2 的例子，在创建 v2 的时候直接就把流量分发到 v2 ，如果此时 v2 有问题就会导致有 20% 的流量异常。下面我们就展示一下如何在转发流量之前验证新的 revision 服务是否正常。我们再创建一个 v3 版本。
 创建一个 `revision-v3.yaml` 的文件，内容如下：
 
-```
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -260,7 +260,7 @@ spec:
 ```
 
 执行 `kubectl apply -f revision-v3.yaml` 部署 v3 版本。然后查看一下 Revision 情况：
-```
+```bash
 └─# kubectl get revision -l "serving.knative.dev/service=traffic-example"
 NAME                 CONFIG NAME       K8S SERVICE NAME     GENERATION   READY   REASON
 traffic-example-v1   traffic-example   traffic-example-v1   1            True
@@ -269,7 +269,7 @@ traffic-example-v3   traffic-example   traffic-example-v3   3            True
 ```
 可以看到现在已经创建出来了三个 Revision 。
 此时我们再看一下 stock-service-example 的真实生效：
-```
+```bash
 └─# kubectl get ksvc traffic-example -o yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
@@ -299,7 +299,7 @@ status:
 ```
 可以看到 v3 Revision 虽然创建出来了，但是因为没有设置 traffic，所以并不会有流量转发。此时你执行多少次 `./run-test.sh` 都不会得到 v3 的输出。
 在 Service 的 status.traffic 配置中可以看到 latest Revision 的配置：
-```
+```yaml
   - latestRevision: true
     percent: 0
     revisionName: traffic-example-v3
@@ -308,7 +308,7 @@ status:
 ```
 每一个 Revision 都有一个自己的 URL，所以只需要基于 v3 Revision 的 URL 发起请求就能开始测试了。
 我已经写好了一个测试脚本，你可以把下面这段脚本保存在 `latest-run-test.sh` 文件中，然后执行这个脚本就能直接发起到 latest 版本的请求：
-```
+```bash
 #!/bin/bash
 export INGRESSGATEWAY=istio-ingressgateway
 export GATEWAY_IP=`kubectl get svc $INGRESSGATEWAY --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`
@@ -320,7 +320,7 @@ curl -H "Host: ${LAST_DOMAIN}" http://${GATEWAY_IP}
 ```
 测试 v3 版本如果没问题就可以把流量分发到 v3 版本了。
 下面我们再创建一个文件 `revision-v3-2.yaml` , 内容如下：
-```
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -357,7 +357,7 @@ spec:
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11431/1573026591696-01f9db15-44ce-4ec6-a91b-e41663e342f3.png) 
 
 revision-v3-2.yaml 增加了到 v3 的流量转发。此时执行 `for ((i=1; i<=10; i++)); do ./run-test.sh; done` 可以看到 v1、v2 和 v3 的比例基本是：8:1:1 
-```
+```bash
 └─# for ((i=1; i<=10; i++)); do ./run-test.sh; done
 Welcome to the v3 app!
 Welcome to the v1 app!

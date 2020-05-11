@@ -11,7 +11,7 @@ description: "calling built-in Shortcodes into your content files."
 ## Sequence 定义
 首先我们看一下 Sequence Spec 定义：
 
-```
+```yaml
 apiVersion: messaging.knative.dev/v1alpha1
 kind: Sequence
 metadata:
@@ -46,7 +46,7 @@ Sequence 都是适合哪些具体应用场景呢？我们上面也提到了事�
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1566301044661-b5dd39b1-b1a1-40b6-98f3-8b2fefe3a85e.png) 
 ### 创建 Knative Service
 这里我们创建 3 个 Knative Service 用于事件处理。每个 Service 接收到事件之后会打印当前的事件处理信息。
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -90,7 +90,7 @@ spec:
 ```
 ### 创建 Sequence
 创建顺序调用 `first->second->third` Service 的 Sequence。
-```
+```yaml
 apiVersion: messaging.knative.dev/v1alpha1
 kind: Sequence
 metadata:
@@ -115,7 +115,7 @@ spec:
 ```
 ### 创建数据源
 创建 CronJobSource 数据源，每隔 1 分钟发送一条事件消息`{"message": "Hello world!"}`到 Sequence 服务。
-```
+```yaml
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: CronJobSource
 metadata:
@@ -138,7 +138,7 @@ spec:
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1566301086528-1e8c2ed2-9953-401d-86f2-ac2ffd1f2722.png) 
 ### 创建 Knative Service
 同上创建 3 个 Knative Service 用于事件处理：
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -182,7 +182,7 @@ spec:
 ```
 ### 创建 Sequence
 创建顺序调用 `first->second->third` Service 的 Sequence，将处理结果通过`reply`发送给`event-display`
-```
+```yaml
 apiVersion: messaging.knative.dev/v1alpha1
 kind: Sequence
 metadata:
@@ -211,7 +211,7 @@ spec:
 ```
 ### 创建结果显示 Service
 创建`event-display` Service, 用于接收最终的结果信息。
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -224,7 +224,7 @@ spec:
 ```
 ### 创建数据源
 创建 CronJobSource 数据源，每隔 1 分钟发送一条事件消息`{"message": "Hello world!"}`到 Sequence 服务。
-```
+```yaml
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: CronJobSource
 metadata:
@@ -245,7 +245,7 @@ Sequence 更高级的地方还在于支持级联处理: Sequence By Sequence，�
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1566301158416-740d7807-c13f-42c6-80d4-907f5d0aaf1d.png) 
 ### 创建 Knative Service
 创建 6 个 Knative Service 用于事件处理， 前 3 个用于第 1 个 Sequence，后 3 个用于第 2 个 Sequence。
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -329,7 +329,7 @@ spec:
 ```
 ### 创建第 1 个 Sequence
 使用 `first->second->third` Service 用于第 1 个 Sequence 调用处理，将执行结果发送给第 2 个 Sequence。
-```
+```yaml
 apiVersion: messaging.knative.dev/v1alpha1
 kind: Sequence
 metadata:
@@ -358,7 +358,7 @@ spec:
 ```
 ### 创建第 2 个 Sequence
 使用 `fourth->fifth->sixth` Service 用于第 2 个 Sequence 调用处理，将执行结果发送给 `event-display`。
-```
+```yaml
 apiVersion: messaging.knative.dev/v1alpha1
 kind: Sequence
 metadata:
@@ -386,7 +386,7 @@ spec:
     name: event-display
 ```
 ### 创建结果显示 Service
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -398,7 +398,7 @@ spec:
         - image: registry.cn-hangzhou.aliyuncs.com/knative-release/event_display:bf45b3eb1e7fc4cb63d6a5a6416cf696295484a7662e0cf9ccdf5c080542c21d
 ```
 ### 创建数据源指向第 1 个 Sequence
-```
+```yaml
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: CronJobSource
 metadata:
@@ -421,7 +421,7 @@ spec:
 ### 创建 Knative Service
 同上创建 3 个 Knative Service，用于 Sequence 中服务处理。
 
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -467,7 +467,7 @@ spec:
 
 ### 创建 Sequence
 创建 Sequence，这里依次顺序执行`first->second->third`这3个服务。将最终处理的结果发送到`broker-test`中。
-```
+```yaml
 apiVersion: messaging.knative.dev/v1alpha1
 kind: Sequence
 metadata:
@@ -498,7 +498,7 @@ spec:
 ### 创建事件源指向 Broker
 创建 CronjobSource，它将每隔 1 分钟发送一条`{"message": "Hello world!"} `消息到 broker-test 中。
 
-```
+```yaml
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: CronJobSource
 metadata:
@@ -513,12 +513,12 @@ spec:
 ```
 ### 创建 Broker
 创建默认 Broker
-```
+```bash
 kubectl label namespace default knative-eventing-injection=enabled
 ```
 ### 创建 Trigger  指向 Sequence
 创建订阅事件类型为`dev.knative.cronjob.event`的 Trigger, 用于 Sequence 进行消费处理。
-```
+```yaml
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:
@@ -535,7 +535,7 @@ spec:
 ```
 ### 创建结果订阅 Trigger
 创建订阅 `samples.http.mod3` 的事件类型 Trigger，将 Sequence 执行的结果发送给`event-display` Service 进行显示。
-```
+```yaml
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:

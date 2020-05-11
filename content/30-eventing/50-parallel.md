@@ -11,7 +11,7 @@ description: "calling built-in Shortcodes into your content files."
 ## 资源定义
 我们先看一下 Parallel 资源定义，典型的 Parallel Spec描述如下：
 
-```
+```yaml
 apiVersion: messaging.knative.dev/v1alpha1
 kind: Parallel
 metadata:
@@ -57,7 +57,7 @@ spec:
    - 为全局的 Channel创建一个 Subscription，订阅条件为`filter`信息，并且把 reply 响应发送给当前 `case`中的过滤 Channel
    - 为过滤 Channel 创建一个 Subscription，将订阅信息发送给每个`case`中的 `Reply`。如果当前`case`中没有设置`Reply`，则发送的全局`Reply`。
 
-```
+```go
 func (r *Reconciler) reconcile(ctx context.Context, p *v1alpha1.Parallel) error {
 	p.Status.InitializeConditions()
 
@@ -148,7 +148,7 @@ func (r *Reconciler) reconcile(ctx context.Context, p *v1alpha1.Parallel) error 
 不管哪个`case`处理完之后，将最终的事件发送给`me-event-display`服务进行事件显示。
 具体操作步骤如下：
 ### 创建 Knative Service
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -196,7 +196,7 @@ spec:
 ```
 
 ### 创建 Parallel
-```
+```yaml
 apiVersion: messaging.knative.dev/v1alpha1
 kind: Parallel
 metadata:
@@ -228,7 +228,7 @@ spec:
 
 ### 创建 CronJobSource 数据源
 
-```
+```yaml
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: CronJobSource
 metadata:
@@ -243,7 +243,7 @@ spec:
 ```
 ### 查看结果
 运行之后可以看到类似如下结果：
-```
+```bash
 kubectl logs -l serving.knative.dev/service=me-event-display --tail=30 -c user-container
 
 ️  cloudevents.Event

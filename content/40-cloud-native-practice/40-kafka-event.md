@@ -33,7 +33,7 @@ description: ""
 
 ### 创建 KafkaSource 实例
 首先创建用于接收事件的服务 event-display:
-```
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -45,7 +45,7 @@ spec:
       - image: registry.cn-hangzhou.aliyuncs.com/knative-sample/eventing-sources-cmd-event_display:bf45b3eb1e7fc4cb63d6a5a6416cf696295484a7662e0cf9ccdf5c080542c21d
 ```
 接下来创建KafkaSource
-```
+```yaml
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: KafkaSource
 metadata:
@@ -69,7 +69,7 @@ spec:
 
 创建完成之后，我们可以查看对应的实例已经运行：
 
-```
+```bash
 [root@iZ2zeae8wzyq0ypgjowzq2Z ~]# kubectl get pods
 NAME                                    READY   STATUS    RESTARTS   AGE
 alikafka-source-k22vz-db44cc7f8-879pj   1/1     Running   0          8h
@@ -80,7 +80,7 @@ alikafka-source-k22vz-db44cc7f8-879pj   1/1     Running   0          8h
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1571143441456-2a028f6a-7ec9-4b85-9e87-26b6289c5279.png) 
 我们可以看到已经接收到了发送过来的 Kafka 消息：
 
-```
+```bash
 [root@iZ2zeae8wzyq0ypgjowzq2Z ~]# kubectl logs event-display-zl6m5-deployment-6bf9596b4f-8psx4 user-container
 
 ☁️  CloudEvent: valid ✅

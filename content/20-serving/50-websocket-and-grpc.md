@@ -18,7 +18,7 @@ description: "calling built-in Shortcodes into your content files."
 - 也可以直接使用编译好的镜像 `registry.cn-hangzhou.aliyuncs.com/knative-sample/websocket-chat:2019-10-15`
 
 Knative Service 配置
-```
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -36,7 +36,7 @@ spec:
 代码 clone 下来以后执行 `kubectl apply -f service.yaml ` 把服务部署到 Knative 中，然后直接访问服务地址即可使用。
 查看 ksvc 列表，并获取访问域名
 
-```
+```bash
 └─# kubectl get ksvc
 NAME                            URL                                                                LATESTCREATED                         LATESTREADY                           READY   REASON
 websocket-chat                  http://websocket-chat.default.knative.kuberun.com                  websocket-chat-tp4ph                  websocket-chat-tp4ph                  True
@@ -51,7 +51,7 @@ websocket-chat                  http://websocket-chat.default.knative.kuberun.co
 gRPC 不能通过浏览器直接访问，需要通过 client 端和 server 端进行交互。本示例的完整代码放在 https://github.com/knative-sample/grpc-ping-go/tree/b1.0 ，本示例会给一个可以直接使用的镜像，测试 gRPC 服务。
 
 Knative Service 配置
-```
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -68,7 +68,7 @@ spec:
 ```
 代码 clone 下来以后执行 `kubectl apply -f service.yaml ` 把服务部署到 Knative 中。
 获取 ksvc 列表和访问域名：
-```
+```bash
 └─# kubectl get ksvc
 NAME                            URL                                                                LATESTCREATED                         LATESTREADY                           READY     REASON
 grpc-ping                       http://grpc-ping.default.knative.kuberun.com                       grpc-ping-plzrv                       grpc-ping-plzrv                       True
@@ -76,7 +76,7 @@ grpc-ping                       http://grpc-ping.default.knative.kuberun.com    
 
 现在我们已经知道 gRPC  server 的地址是 grpc-ping.default.knative.kuberun.com  端口是 80 那么我们可以发起测试请求：
 
-```
+```bash
 └─# docker run --rm registry.cn-hangzhou.aliyuncs.com/knative-sample/grpc-ping-go:2019-10-15 /client -server_addr="grpc-ping.default.knative.kuberun.com:80" -insecure
 2019/11/06 13:45:46 Ping got hello - pong
 2019/11/06 13:45:46 Got pong 2019-11-06 13:45:46.43385349 +0800 CST m=+52.762218971

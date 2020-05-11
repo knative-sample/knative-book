@@ -28,7 +28,7 @@ CloudEvents 属性名称必须由 ASCII 字符集的小写字母（“a”到“
 符合本规范的每个 CloudEvent 必须包括根据需要指定的上下文属性，并且可以包括一个或多个可选的上下文属性。
 参考示例：
 
-```
+```yaml
   specversion: 0.2
   type: dev.knative.k8s.event
   source: /apis/serving.knative.dev/v1alpha1/namespaces/default/routes/sls-cloudevent
@@ -47,7 +47,7 @@ CloudEvents 生产者可以在事件中包含其他上下文属性，这些属�
 ### Data
 正如术语`Data`所定义的，CloudEvents 产生具体事件的内容信息封装在数据属性中。例如，KubernetesEventSource所产生的 CloudEvent 的`Data`信息如下：
 
-```
+```yaml
 data:
   {
     "metadata": {
@@ -85,12 +85,12 @@ data:
 ### 事件接收服务
 - 导入cloudevents
 
-```
+```go
 import "github.com/cloudevents/sdk-go"
 ```
 -通过 HTTP 协议接收 CloudEvent 事件
 
-```
+```go
 func Receive(event cloudevents.Event) {
     fmt.Printf("cloudevents.Event\n%s", event.String())
 }
@@ -106,7 +106,7 @@ func main() {
 ### 事件发送服务
 - 创建一个基于  0.2 协议的 CloudEvent 事件
 
-```
+```go
 event := cloudevents.NewEvent()
 event.SetID("ABC-123")
 event.SetType("com.cloudevents.readme.sent")
@@ -115,7 +115,7 @@ event.SetData(data)
 ```
 - 通过HTTP协议发送这个CloudEvent
 
-```
+```go
 t, err := cloudevents.NewHTTPTransport(
 	cloudevents.WithTarget("http://localhost:8080/"),
 	cloudevents.WithEncoding(cloudevents.HTTPBinaryV02),

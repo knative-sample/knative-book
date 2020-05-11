@@ -163,7 +163,7 @@ func (r *reconciler) reconcile(ctx context.Context, b *v1alpha1.Broker) (reconci
 ```
 Broker 示例：
 
-```
+```yaml
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Broker
 metadata:
@@ -274,7 +274,7 @@ func (r *reconciler) reconcile(ctx context.Context, t *v1alpha1.Trigger) error {
 ```
 Trigger 示例：
 
-```
+```yaml
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:

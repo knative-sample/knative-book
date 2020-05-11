@@ -17,7 +17,7 @@ weight: 50
 ### 创建 Service Account
 为 `ApiServerSource` 创建 Service Account， 用于授权 ApiServerSource 获取 Kubernetes Events 。
 serviceaccount.yaml 如下：
-```
+```yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -56,13 +56,13 @@ subjects:
   namespace: default
 ```
 执行如下操作：
-```
+```bash
 kubectl apply --filename serviceaccount.yaml
 ```
 ### 创建 Event Source
 Knative Eventing 中 通过 Event Source 对接第三方系统产生统一的事件类型。当前支持 ApiServerSource，GitHub 等多种数据源。这里我们创建一个 ApiServerSource 事件源用于接收 Kubernetes Events 事件并进行转发。k8s-events.yaml 如下：
 
-```
+```yaml
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: ApiServerSource
 metadata:
@@ -83,7 +83,7 @@ spec:
 
 执行命令：
 
-```
+```bash
 kubectl apply --filename k8s-events.yaml
 ```
 
@@ -144,7 +144,7 @@ func main() {
 通过上面的代码，可以轻松构建你自己的镜像。镜像构建完成之后，接下来可以创建一个简单的 Knative Service， 用于消费 `ApiServerSource` 产生的事件。
 service.yaml 示例如下：
 
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -158,14 +158,14 @@ spec:
 ```
 执行命令：
 
-```
+```bash
 kubectl apply --filename service.yaml
 ```
 
 ### 创建 Broker
 在所选命名空间下，创建 `default` Broker。假如选择 `default` 命名空间， 执行操作如下。
 
-```
+```bash
 kubectl label namespace default knative-eventing-injection=enabled
 ```
 这里 Eventing Controller 会根据设置`knative-eventing-injection=enabled` 标签的 namepace， 自动创建 Broker。并且使用在webhook中默认配置的 ClusterChannelProvisioner（in-memory）。
@@ -173,7 +173,7 @@ kubectl label namespace default knative-eventing-injection=enabled
 
 ### 创建 Trigger
 Trigger 可以理解为 Broker 和Service 之间的过滤器，可以设置一些事件的过滤规则。这里为默认的 Broker 创建一个最简单的 Trigger，并且使用 Service 进行订阅。trigger.yaml 示例如下：
-```
+```yaml
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:
@@ -188,7 +188,7 @@ spec:
 ```
 执行命令：
 
-```
+```bash
 kubectl apply --filename trigger.yaml
 ```
 
@@ -196,19 +196,19 @@ kubectl apply --filename trigger.yaml
 
 ## 验证
 执行如下命令，生成 k8s events。
-```
+```bash
 kubectl run busybox --image=busybox --restart=Never -- ls
 kubectl delete pod busybox
 ```
 
 可以通过下述方式查看 Knative Service 是否接收到事件。
-```
+```bash
 kubectl get pods
 kubectl logs -l serving.knative.dev/service=event-display -c user-container
 ```
 日志输出类似下面，说明已经成功接收事件。
 
-```
+```yaml
 Hello World:  
 ☁️  CloudEvent: valid ✅
 Context Attributes,

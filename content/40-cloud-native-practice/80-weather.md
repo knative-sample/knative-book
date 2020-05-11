@@ -39,7 +39,7 @@ description: ""
 登录高德开放平台: https://lbs.amap.com， 创建应用，获取 Key 即可：
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1569331307691-e863888e-0be0-451a-bbaa-fe06fb3f61d2.png) 
 获取Key之后，可以直接通过url访问：https://restapi.amap.com/v3/weather/weatherInfo?city=110101&extensions=all&key=<用户key>，返回天气信息数据如下：
-```
+```json
 {
     "status":"1",
     "count":"1",
@@ -79,7 +79,7 @@ description: ""
 - 将天气信息存储或者更新到表格存储
 
 在 Knative 中，我们可以直接创建服务如下：
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -119,7 +119,7 @@ spec:
 这里或许有疑问：为什么不在服务中直接进行定时轮询，非要通过 Knative Eventing 搞一个定时事件触发执行调用？那我们要说明一下，Serverless 时代下就该这样玩-按需使用。千万不要在服务中按照传统的方式空跑这些定时任务，亲，这是在持续浪费计算资源。
 言归正传，下面我们使用 Knative Eventing 自带的定时任务数据源（CronJobSource），触发定时同步事件。
 创建 CronJobSource 资源，实现每 3 个小时定时触发同步天气服务（weather-store），WeatherCronJob.yaml 如下：
-```
+```yaml
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: CronJobSource
 metadata:
@@ -134,7 +134,7 @@ spec:
 ```
 执行命令：
 
-```
+```bash
 kubectl apply -f WeatherCronJob.yaml
 ```
 现在我们登录阿里云表格存储服务，可以看到天气预报数据已经按照城市、日期的格式同步进来了。
@@ -144,7 +144,7 @@ kubectl apply -f WeatherCronJob.yaml
 有了这些天气数据，可以随心所欲的提供属于我们自己的天气预报服务了（感觉像是承包了一块地，我们来当地主），这里没什么难点，从表格存储中查询对应的天气数据，按照返回的数据格式进行封装即可。
 在 Knative 中，我们可以部署 RESTful API 服务如下：
 
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -186,7 +186,7 @@ cityCode：城市区域代码。如北京市区域代码：110000
 date：查询日期。如格式：2019-09-26
 ```
 - 返回结果
-```
+```json
 {
     "code":200,
     "message":"",
@@ -225,11 +225,11 @@ date：查询日期。如格式：2019-09-26
 
 部署自定义事件源服务如下：
 从 https://github.com/knative-sample/tablestore-source/tree/master/config 中可以获取事件源部署文件，执行下面的操作
-```
+```bash
  kubectl apply -f 200-serviceaccount.yaml -f 201-clusterrole.yaml -f 202-clusterrolebinding.yaml -f 300-alitablestoresource.yaml -f 400-controller-service.yaml -f 500-controller.yaml -f 600-istioegress.yaml
 ```
 部署完成之后，我们可以看资源控制器已经开始运行：
-```
+```bash
 [root@iZ8vb5wa3qv1gwrgb3lxqpZ config]# kubectl -n knative-sources get pods
 NAME                                 READY   STATUS    RESTARTS   AGE
 alitablestore-controller-manager-0   1/1     Running   0          4h12m
@@ -238,7 +238,7 @@ alitablestore-controller-manager-0   1/1     Running   0          4h12m
 ###  创建事件源
 由于我们是通过 Knative Eventing 中 Broker/Trigger 事件驱动模型对天气事件进行处理。首先我们创建用于数据接收的 Broker 服务。
 #### 创建 Broker
-```
+```yaml
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Broker
 metadata:
@@ -250,7 +250,7 @@ spec:
 ```
 #### 创建事件源实例
 这里需要说明一下，创建事件源实例其实就是在表格存储中创建通道服务，那么就需要配置访问通道服务的地址、accessKeyId和accessKeySecret，这里参照格式：`{ "url":"https://xxx.cn-beijing.ots.aliyuncs.com/", "accessKeyId":"xxxx","accessKeySecret":"xxxx" }` 设置并进行base64编码。将结果设置到如下 Secret 配置文件`alitablestore` 属性中：
-```
+```yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -261,7 +261,7 @@ data:
   alitablestore: "<base64>"
 ```
 创建 RBAC 权限
-```
+```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -284,7 +284,7 @@ secrets:
 - name: alitablestore-secret
 ```
 创建 AliTablestoreSource 实例，这里我们设置接收事件的 `sink` 为上面创建的 Broker 服务。
-```
+```yaml
 ---
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: AliTablestoreSource
@@ -308,7 +308,7 @@ spec:
 ```
 创建完成之后，我们可以看到运行中的事件源：
 
-```
+```bash
 [root@iZ8vb5wa3qv1gwrgb3lxqpZ config]# kubectl get pods
 NAME                                                              READY   STATUS      RESTARTS   AGE
 tablestore-alitablestoresource-9sjqx-656c5bf84b-pbhvw             1/1     Running     0          4h9m
@@ -321,7 +321,7 @@ tablestore-alitablestoresource-9sjqx-656c5bf84b-pbhvw             1/1     Runnin
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1570697515570-49b009a0-dbfd-4be4-a80c-c14479d95108.png) 
 
 这里我们假设北京(110000)，日期：2019-10-13, 如果天气有雨，就通过钉钉发送通知提醒，则服务配置如下：
-```
+```yaml
 apiVersion: serving.knative.dev/v1beta1
 kind: Service
 metadata:
@@ -340,7 +340,7 @@ spec:
 关于钉钉提醒服务具体实现参见 GitHub 源代码：https://github.com/knative-sample/dingtalk-weather-service
 #### 创建订阅
 最后我们创建 Trigger订阅天气事件，并且触发天气提醒服务：
-```
+```yaml
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:

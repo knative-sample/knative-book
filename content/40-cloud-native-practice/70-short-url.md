@@ -61,7 +61,7 @@ vEzm6v
 假设我们服务的域名是 short-url.default.knative.kuberun.com ，那么现在访问 http://short-url.default.knative.kuberun.com/vEzm6v 就可以跳转到长网址了。
 ### 代码实现
 
-```
+```go
 package main
 
 import (
@@ -257,7 +257,7 @@ func main() {
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11431/1568965283426-9951452a-7023-4073-b8a2-f493e834db34.png) 
 ### 第三步 部署服务
 Knative Service 的配置如下， 使用前两步的配置信息填充 Knative Service 的环境变量。然后部署到 Knative集群即可
-```
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:

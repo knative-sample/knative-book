@@ -23,7 +23,7 @@ Tekton 主要由如下五个核心概念组成：
 **Task**
 Task 就是一个任务执行模板，之所以说 Task 是一个模板是因为 Task 定义中可以包含变量，Task 在真正执行的时候需要给定变量的具体值。如果把 Tekton 的 Task 有点儿类似于定义一个函数，Task 通过 inputs.params 定义需要哪些入参，并且每一个入参还可以指定默认值。Task 的 steps 字段表示当前 Task 是有哪些步骤组成的，每一个步骤具体就是基于镜像启动一个 container 执行一些操作，container 的启动参数可以通过 Task 的入参使用模板语法进行配置。
 
-```
+```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
@@ -45,7 +45,7 @@ spec:
 **TaskRun**
 Task 定义好以后是不能执行的，就像一个函数定义好以后需要调用才能执行一样。所以需要再定义一个 TaskRun 去执行 Task。TaskRun 主要是负责设置 Task 需要的参数，并通过 taskRef 字段引用要执行的 Task。
 
-```
+```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: TaskRun
 metadata:
@@ -63,7 +63,7 @@ spec:
 
 **Pipeline**
 一个 TaskRun 只能执行一个 Task，当需要编排多个 Task 的时候就需要 Pipeline 出马了。Pipeline 是一个编排 Task 的模板。Pipeline 的 params 声明了执行时需要的入参。 Pipeline 的 spec.tasks 定义了需要编排的 Task。Tasks 是一个数组，数组中的 task 并不是通过数组声明的顺序去执行的，而是通过 runAfter 来声明 task 执行的顺序。Tekton controller 在解析 CRD 的时候会解析 Task 的顺序，然后根据 runAfter 设置生成的依次树依次去执行。Pipeline 在编排 Task 的时候需要给每一个 Task 传入必须的参数，这些参数的值可以来自 Pipeline 自身的 params 设置。
-```
+```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
@@ -98,7 +98,7 @@ spec:
 **PipelineRun**
 和 Task 一样 Pipeline 定义完成以后也是不能直接执行的，需要 PipelineRun 才能执行 Pipeline。PipelineRun 的主要作用是给 Pipeline 传入必要的入参，并执行 Pipeline
 
-```
+```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun
 metadata:
@@ -114,7 +114,7 @@ spec:
 **PipelineResource**
 前面已经介绍了 Tekton 的四个核心概念。现在我们已经知道怎么定义 Task、执行 Task 以及编排 Task 了。但可能你还想在 Task 之间共享资源，这就是 PipelineResource 的作用。比如我们可以把 git 仓库信息放在 PipelineResource 中。这样所有 Task 就可以共享这些信息了。
 
-```
+```yaml
 piVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
@@ -133,7 +133,7 @@ spec:
 git 仓库、镜像仓库这些都是需要鉴权才能使用的。所以还需要一种设定鉴权信息的机制。Tekton 本身是 Kubernetes 原生的编排系统。所以可以直接使用 Kubernetes 的 ServiceAccount 机制实现鉴权。
 实例如下：
 - 定义一个保存镜像仓库鉴权信息的 secret
-```
+```yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -147,7 +147,7 @@ stringData:
 ```
 - 定义 ServiceAccount ，并且使用上面的 secret
 
-```
+```yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -156,7 +156,7 @@ secrets:
 - name: ack-cr-push-secret
 ```
 - PipelineRun 中引用 ServiceAccount
-```
+```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun
 metadata:
@@ -174,7 +174,7 @@ https://github.com/knative-sample/tekton-knative/tree/b1.0 这是一个完整的
 **clone 代码**
 clone 代码到本地，切换到 b1.0 分支， 到 tekton-cicd 目录进行后面的操作。
 
-```
+```bash
 git clone https://github.com/knative-sample/tekton-knative
 git checkout b1.0
 ```
@@ -182,7 +182,7 @@ git checkout b1.0
 **创建 PipelineResource**
 主要内容在 `resources/picalc-git.yaml` 文件中。如下所示主要是把 https://github.com/knative-sample/tekton-knative/tree/b1.0 保存在 resource 中给其他资源使用。
 
-```
+```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
@@ -202,7 +202,7 @@ spec:
 主要内容在 `tasks/source-to-image.yaml` 文件中。此 task 的主要功能是把源代码编译成镜像。
 主要是使用 kaniko 实现容器内编译 Docker 镜像的能力。此 Task 的参数主要是设置编译上下文的一些信息，比如：Dockerfile、ContextPath 以及目标镜像 tag 等。
 
-```
+```yaml
  apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
@@ -242,7 +242,7 @@ spec:
 主要内容在 `tasks/deploy-using-kubectl.yaml` 文件中。
 如下所示这个 Task 主要的作用是通过参数获取到目标镜像的信息，然后执行一条 sed 命令把 Knative Service yaml 中的 `__IMAGE__` 替换成目标镜像。再通过 kubectl 发布到 Kubernetes 中。
 
-```
+```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
@@ -280,7 +280,7 @@ spec:
 **定义 Pipeline**
 现在我们已经有两个 Task 了，现在我们就用一个 PIpeline 来编排这两个 Task：
 
-```
+```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
@@ -340,7 +340,7 @@ spec:
 - username 换成镜像仓库鉴权的用户名
 - password 环境镜像仓库鉴权的密码
 
-```
+```yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -354,7 +354,7 @@ stringData:
 ```
 
 下面这些信息保存到文件中，然后使用 kubectl apply -f 指令提交到 Kubernetes 
-```
+```yaml
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -401,7 +401,7 @@ subjects:
 **定义 PIpelineRun**
 ServiceAccount 对应的鉴权信息是通过和 PIpelineRun 绑定的方式执行的。参见 `run/picalc-pipeline-run.yaml` 文件
 
-```
+```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun
 metadata:
@@ -427,16 +427,16 @@ spec:
 
 **运行 Tekton HelloWorld**
 准备 PIpeline 的资源
-```
+```bash
 kubectl apply -f tasks/source-to-image.yaml -f tasks/deploy-using-kubectl.yaml  -f resources/picalc-git.yaml -f image-secret.yaml -f pipeline-account.yaml -f pipeline/build-and-deploy-pipeline.yaml 
 ```
 
 执行 create 把 pipelieRun 提交到 Kubernetes 集群。之所以这里使用 create 而不是使用 apply 是因为 PIpelineRun 每次都会创建一个新的，kubectl 的 create 指令会基于 generateName 创建新的 PIpelineRun 资源。
-```
+```bash
 kubectl create -f run/picalc-pipeline-run.yaml 
 ```
 查看一下 pod 信息可能是下面这样：
-```
+```bash
 └─# kubectl get pod
 NAME                                                        READY   STATUS      RESTARTS   AGE
 tekton-kn-sample-45d84-deploy-to-cluster-wfrzx-pod-f093ef   0/3     Completed   0          8h
@@ -444,7 +444,7 @@ tekton-kn-sample-45d84-source-to-image-7zpqn-pod-c2d20c     0/2     Completed   
 ```
 
 此时查看 Knative service 的配置：
-```
+```bash
 └─# kubectl get ksvc
 NAME                            URL                                                                LATESTCREATED                         LATESTREADY                           READY   REASON
 tekton-helloworld-go            http://tekton-helloworld-go.default.knative.kuberun.com            tekton-helloworld-go-ntksb            tekton-helloworld-go-ntksb            True

@@ -92,7 +92,7 @@ Knative 收敛 user-container 健康检查能力的方法是：
 **使用方法**
 如下所示可以在 Knative Service 中定义 Readiness
 
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -113,7 +113,7 @@ spec:
 但是需要说明两点：
 1. 和原生的 Kubernetes Pod Readiness 配置相比，Knative 中 timeoutSeconds、failureThreshold、periodSeconds 和 successThreshold 如果要配置就要一起配置，并且不能为零，否则 Knative webhook 校验无法通过。并且如果设置了 periodSeconds 那么一旦出现一次 Success，就再也不会去探测 user-container(不建议设置 periodSeconds，应该让系统自动处理 )
 2. 如果 periodSeconds 没有配置那么就会使用默认的探测策略，默认配置如下
-```
+```yaml
             
             timeoutSeconds: 60
             failureThreshold: 3

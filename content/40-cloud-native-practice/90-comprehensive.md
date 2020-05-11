@@ -22,7 +22,7 @@ description: ""
 - 修改分支代码，提交 merge request 合并到 master 分支
 - Eventing 监听到 merge 事件，发送给 GitHub Trigger 服务
 - GitHub Trigger 服务接收事件, 通过Tekton执行代码构建和并通过deployer执行服务部署。GitHub  Trigger 的作用就是解析 GitHub 事件的详细信息，然后转换成 Tekton 资源并且提交到 Kubernetes 中执行 Pipeline。 项目地址：https://github.com/knative-sample/tekton-serving/tree/b1.0。 这个项目中有两个部分： Trigger 和 Deployer，Trigger 的作用是解析 github 事件， 并提交 PipelineRun 定义。Deployer 的作用就是更新 Service 的镜像信息。github source pull_request body 的关键内容如下：
-	```
+	```json
 	{
 	  "action": "closed",
 		... ...
@@ -47,7 +47,7 @@ description: ""
 ### 部署 Tekton 服务
 我们看一下创建代码构建 Task 和 部署服务Task
 代码构建Task：
-```
+```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
@@ -85,7 +85,7 @@ spec:
 ```
 
 这里通过 deployer-deployer 执行服务部署，部署服务Task：
-```
+```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
@@ -113,7 +113,7 @@ spec:
 
 ```
 另外需要设置一下镜像仓库的secret:
-```
+```yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -127,14 +127,14 @@ stringData:
 ```
 执行如下命令：
 
-```
+```bash
 kubectl apply -f tekton/pipeline/build-and-deploy-pipeline.yaml -f tekton/resources/picalc-git.yaml -f tekton/image-secret.yaml -f tekton/tasks/source-to-image.yaml -f tekton/tasks/image-to-deployer.yaml
 
 ```
 ### 部署 Knative Serving 服务
 先创建deployer-github-trigger服务，用于接收GitHub事件，并触发Tekton Pipeline构建任务。其中 service.yaml 如下：
 
-```
+```yaml
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -160,7 +160,7 @@ spec:
 ```
 这里通过ConfigMap `deployer-trigger-config`， 设置 PipelineRun。deployer-github-trigger 能根据 github Event 信息获取代码仓库的最新信息但不能自动决定 PipelineRun 的定义，所以需要指定一个 PipelineRun 的模板。Trigger 通过 --trigger-config 参数指定 PipelineRun 的模板, 模板内容如下：
 
-```
+```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -193,7 +193,7 @@ data:
 
 执行命令如下：
 
-```
+```bash
 kubectl apply -f serving/clusterrole.yaml -f serving/clusterrolebinding.yaml -f serving/serviceaccount.yaml -f serving/configmap.yaml -f serving/service.yaml
 ```
 
@@ -207,13 +207,13 @@ kubectl apply -f serving/clusterrole.yaml -f serving/clusterrolebinding.yaml -f 
 
 secretToken内容可以通过下述方式生成随机字符串:
 
-```
+```bash
 head -c 8 /dev/urandom | base64
 ```
 
 更新 `githubsecret.yaml` 内容。如果生成的是 `personal_access_token_value` token, 则需要设置 `secretToken` 如下：
 
-```
+```yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -225,13 +225,13 @@ stringData:
 ```
 执行命令使其生效：
 
-```
+```bash
 kubectl  apply -f eventing/githubsecret.yaml
 ```
 #### 创建 GitHub 事件源
 为了接收 GitHub 产生的事件， 需要创建 GitHubSource 用于接收事件。
 
-```
+```yaml
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: GitHubSource
 metadata:
@@ -262,11 +262,11 @@ spec:
   - 目标 Service。sink 字段表示接收到的事件需要发送到哪个 Service , 这里是直接发送到前面定义的 deployer-github-trigger 服务
 
 执行 kubectl 命令：
-```
+```bash
 kubectl  apply -f eventing/github-source.yaml
 ```
 如果集群中开启了Istio注入，需要开启egress访问：
-```
+```bash
 kubectl  apply -f eventing/egress.yaml
 ```
 
@@ -286,7 +286,7 @@ kubectl  apply -f eventing/egress.yaml
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1573044379880-abb6c8a1-e6fa-4ccc-bfb1-a5c34be6ab0f.png) 
 3. 插件配置这里我们针对 `hello-sample` Service, 设置采集的环境变量为："K_SERVICE": "hello-sample"。并且通过 processors 分割日志信息，如这里"Keys": [ "time","level", "msg" ]。
 
-```
+```json
 {
   "inputs": [
     {

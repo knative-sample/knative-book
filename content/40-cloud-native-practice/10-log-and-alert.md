@@ -21,7 +21,7 @@ description: ""
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1573044379880-abb6c8a1-e6fa-4ccc-bfb1-a5c34be6ab0f.png) 
 4. 插件配置这里我们针对 `helloworld-go` Service, 设置采集的环境变量为："K_SERVICE": "helloworld-go"。并且通过 processors 分割日志信息，如这里"Keys": [ "time","level", "msg" ]。
 
-```
+```json
 {
   "inputs": [
     {
@@ -58,7 +58,7 @@ description: ""
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1560418766446-d91e0ab5-3103-457e-bf82-cbfc7dcc79fd.png) 
 5. 访问 Hello World 示例服务。
 
-```
+```bash
 $ curl -H "Host: helloworld-go.default.example.com" http://112.124.XX.XX
 Hello Go Sample v1!
 ```
@@ -84,7 +84,7 @@ Hello Go Sample v1!
 
 5. 访问 Hello World 示例服务。执行多次以下命令，就会触发告警通知
 
-```
+```bash
 $ curl -H "Host: helloworld-go.default.example.com" http://112.124.XX.XX
 Hello Go Sample v1!
 ```

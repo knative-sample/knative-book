@@ -34,13 +34,13 @@ description: ""
 ![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/11378/1559396080243-c86eccce-8094-44d1-83a8-bf05dda974f1.png) 
 
 secretToken内容可以通过下述方式生成随机字符串：
-```
+```bash
 head -c 8 /dev/urandom | base64
 ```
 
 更新 `githubsecret.yaml` 内容。如果生成的是 `personal_access_token_value` token, 则需要设置 `secretToken` 如下：
 
-```
+```yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -52,13 +52,13 @@ stringData:
 ```
 执行命令使其生效：
 
-```
+```bash
 kubectl --namespace default apply --filename githubsecret.yaml
 ```
 ### 创建 GitHub 事件源
 为了接收 GitHub 产生的事件， 需要创建 GitHubSource 用于接收事件。
 
-```
+```yaml
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: GitHubSource
 metadata:
@@ -82,7 +82,7 @@ spec:
 ```
 执行 kubectl 命令：
 
-```
+```bash
 kubectl --namespace default apply --filename github-source.yaml
 ```
 
@@ -92,13 +92,13 @@ kubectl --namespace default apply --filename github-source.yaml
 
 在 GitHub repository 中 创建一个 `pull request `，会产生Event事件，然后在 Knative Eventing 可以查看：
 
-```
+```bash
 kubectl --namespace default get pods
 kubectl --namespace default logs github-event-display-XXXX user-container
 ```
 我们可以看到类似下面的事件结果：
 
-```
+```yaml
 2018/11/08 18:25:34 Message Dumper received a message: POST / HTTP/1.1
 Host: github-event-display.knative-demo.svc.cluster.local
 Accept-Encoding: gzip

@@ -16,7 +16,7 @@ Golang 是从 1.7 版本开始引入的 Context ，Golang 的 Context 可以很�
 
 **Context 定义**
 Context 本身是一个接口
-```
+```go
 type Context interface {
 	Deadline() (deadline time.Time, ok bool)
 	Done() <-chan struct{}
@@ -65,7 +65,7 @@ Informer “构造函数”是在 init 函数中自动注册到 injection.Defaul
 
 **构造 Informer**
 接着使用 `	ctx, informers := injection.Default.SetupInformers(ctx, cfg)` 构造出所有的 informer，然后调用下面这段代码执行注入，把 informer 注入到 Context 中。
-```
+```go
 	// Start all of the informers and wait for them to sync.
 	logger.Info("Starting informers.")
 	if err := controller.StartInformers(ctx.Done(), informers...); err != nil {
@@ -80,7 +80,7 @@ Informer “构造函数”是在 init 函数中自动注册到 injection.Defaul
 如上所示，所有的 informer 都是从 Context 中获取的。
 最后 Controller 初始化一个 Reconciler 接口，接口的定义如下, 里面只有一个 Reconcile 函数。这个使用方式和 `sigs.k8s.io/controller-runtime` 使用的逻辑是一样的。如果你之前写过 Operator 之类的功能，对这个操作应该不会陌生。
 
-```
+```go
 // Reconciler is the interface that controller implementations are expected
 // to implement, so that the shared controller.Impl can drive work through it.
 type Reconciler interface {
