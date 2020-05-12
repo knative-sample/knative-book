@@ -9,7 +9,7 @@ description: ""
 标准 Serverless 框架和人脸识别服务结合会产生怎样的火花？本文介绍如何通过 Knative 实现人脸识别服务，看看能否给你带来不一样的体验。
 ## 场景
 通过 OSS 控制台上传照片，MnsOss 事件源接收图片上传的事件信息，发送到 Knatvie Eventing，通过Broker/Trigger事件处理模型之后，接着触发 Knative Serving 中的人脸识别服务进行分析。最后把分析之后的图片回传到 OSS。
-![image](https://yqfile.alicdn.com/5c89f6dacb16aa5d75d49183cc0d759b1fe717b3.png)
+![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2020/png/11378/1589253963282-bf4a1a2b-0fa2-478b-beb0-97f1df6ff697.png)
 
 
 ## 准备
@@ -26,18 +26,18 @@ description: ""
 ## 操作
 ### 创建 OSS 事件通知
 选择 Bucket, 点击**事件通知**页签
-![image](https://yqfile.alicdn.com/cf870f7448e5aa72ab43cd20ed5e13c368b6fe37.png)
+![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2020/png/11378/1589253991931-979777a7-d2d8-4f0a-a8d4-c2367da87f5e.png)
 
 创建规则：
-![image](https://yqfile.alicdn.com/4d1d826da02fb71e5784ca69c86a32427d2bb60d.png)
+![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2020/png/11378/1589254010239-21d2f04a-db38-4426-9260-6667816b8b4e.png)
 
 
 创建完成之后，会在MNS中生成相应的Topic：
-![image](https://yqfile.alicdn.com/d67f1aaae26be5e3a46915fb8fcbe9bdecb205f9.png)
+![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2020/png/11378/1589254024224-3012856f-647e-4c03-9755-b7e3d92a35ad.png)
 
 
 获取公网Topic访问连接：
-![image](https://yqfile.alicdn.com/b2faf9c20412250ab55f70aa30a8bd166c8c2b0d.png)
+![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2020/png/11378/1589254040664-b83ed2a6-7d69-4073-af40-93dcf00bcec7.png)
 
 这里我们选择公网访问连接：https://xxxx.mns.cn-shanghai.aliyuncs.com/
 
@@ -208,10 +208,10 @@ kubectl apply -f trigger.yaml
 ### 验证
 通过 OSS 上传人脸图片。会在目标图片的存放位置生成人脸识别结果图片。
 识别前：
-![46985432075_56c3190d32_o](https://yqfile.alicdn.com/13e7750f7bf68d837b24076f79e6b7455527384e.jpeg)
+![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2020/png/11378/1589254154991-12b10e96-fb1d-49ce-a1a2-bd8f178a12f7.png)
 
 识别结果：
-![46985432075_56c3190d32_o](https://yqfile.alicdn.com/88cd6298d338e601326c051def111216f61e157e.jpeg)
+![undefined](https://intranetproxy.alipay.com/skylark/lark/0/2020/png/11378/1589254168619-4026278e-6420-469d-883c-8dd206414075.png)
 
 
 ## 总结
