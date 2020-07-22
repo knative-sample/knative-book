@@ -3,7 +3,7 @@ title: "Serving 进阶"
 date: 2020-5-10T15:26:15Z
 draft: false
 weight: 20
-description: "this is a sample document."
+description: "《Knative 云原生应用开发指南》-- 开启云原生时代 Serverless 之门"
 ---
 
 - [自动扩缩容 - Autoscaler](./10-autoscaler-kpa.md)

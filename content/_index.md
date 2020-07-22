@@ -1,12 +1,7 @@
 ---
-date: 2017-10-19T15:26:15Z
-lastmod: 2019-10-26T15:26:15Z
-publishdate: 2018-11-23T15:26:15Z
-
 title: 首页
-description: Text about this post
-images:
-- images/pexels-photo-196666.jpeg
+date: 2020-5-10T15:26:15Z
+description: "《Knative 云原生应用开发指南》-- 开启云原生时代 Serverless 之门"
 ---
 
 随着 Kubernetes 的崛起和 CNCF 的壮大，云原生的概念已经越来越深入人心。几乎到了如果不和云原生扯上点儿关系似乎就不好意思和别人对话的地步。那么到底什么是云原生？要搞清楚什么是云原生，我们首先要弄清楚云到底是怎么回事儿。接下来我们就从 IaaS 的演进和服务化的演进这两个脉络来看看云的发展趋势和云原生的含义。

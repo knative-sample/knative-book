@@ -1,10 +1,10 @@
 ---
 title: "快速入门"
-date: 2017-10-17T15:26:15Z
+date: 2020-5-10T15:26:15Z
 draft: false
 weight: 10
 
-description: Text about this post
+description: "《Knative 云原生应用开发指南》-- 开启云原生时代 Serverless 之门"
 images:
 - images/pexels-photo-196666.jpeg
 ---

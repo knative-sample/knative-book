@@ -3,7 +3,7 @@ title: "云原生实践"
 date: 2020-5-10T15:26:15Z
 draft: false
 weight: 40
-description: "this is a sample document."
+description: "《Knative 云原生应用开发指南》-- 开启云原生时代 Serverless 之门"
 ---
 
 - [日志和监控告警](./10-log-and-alert.md)
